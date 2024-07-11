@@ -4,6 +4,7 @@ https://github.com/InAnotherLife/easy-server
 
 https://t.me/JohnWooooo
 
+[![Easy Server workflow](https://github.com/InAnotherLife/easy-server/actions/workflows/main.yml/badge.svg)](https://github.com/InAnotherLife/easy-server/actions/workflows/main.yml)
 
 ## О проекте
 Программа представляет собой простое веб-приложение.\
