@@ -93,7 +93,7 @@ def get_users():
 # Эндпойнт для получения информации о конкретном пользователе
 @app.route('/users/<int:user_id>', methods=['GET'])
 def get_user(user_id):
-    user = User.query.get(user_id)
+    user = db.session.get(User, user_id)
     if user is None:
         return jsonify({'message': 'User was not found'}), 404
 
@@ -110,7 +110,7 @@ def get_user(user_id):
 @app.route('/users/<int:user_id>', methods=['PATCH'])
 @jwt_required()
 def update_user(user_id):
-    user = User.query.get(user_id)
+    user = db.session.get(User, user_id)
     if user is None:
         return jsonify({'message': 'User was not found'}), 404
 
@@ -133,13 +133,13 @@ def update_user(user_id):
 @app.route('/users/<int:user_id>', methods=['DELETE'])
 @jwt_required()
 def delete_user(user_id):
-    user = User.query.get(user_id)
+    user = db.session.get(User, user_id)
     if user is None:
         return jsonify({'message': 'User was not found'}), 404
 
     db.session.delete(user)
     db.session.commit()
-    return jsonify({"msg": "User deleted"}), 200
+    return jsonify({'message': 'User deleted'}), 200
 
 
 # Заглушка для начальной страницы
