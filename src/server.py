@@ -102,7 +102,7 @@ def get_user(user_id):
 
 
 # Эндпойнт для обновления информации о пользователе
-@app.route('/users/<int:user_id>', methods=['PUT', 'PATCH'])
+@app.route('/users/<int:user_id>', methods=['PATCH'])
 @jwt_required()
 def update_user(user_id):
     user = User.query.get(user_id)
@@ -137,7 +137,7 @@ def delete_user(user_id):
     return jsonify({"msg": "User deleted"}), 200
 
 
-# Затычка для начальной страницы
+# Заглушка для начальной страницы
 @app.route('/')
 def hello_world():
     return 'Easy Server'
