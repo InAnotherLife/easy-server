@@ -118,7 +118,6 @@ def update_user(user_id):
     firstname = data.get('firstname')
     lastname = data.get('lastname')
     password = data.get('password')
-
     if firstname:
         user.firstname = firstname
     if lastname:
