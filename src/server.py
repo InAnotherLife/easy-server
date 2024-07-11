@@ -40,7 +40,8 @@ def register():
         return jsonify({'message': 'Password is missing'}), 400
     if len(password) < MIN_PASSWORD_LENGTH:
         return jsonify(
-            {'message': 'Password must be at least 3 characters'}
+            {'message':
+             f'Password must be at least {MIN_PASSWORD_LENGTH} characters'}
         ), 400
 
     new_user = User(username=username)
