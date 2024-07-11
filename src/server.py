@@ -1,6 +1,5 @@
 from flask import Flask, jsonify, request
-from flask_jwt_extended import (JWTManager, create_access_token,
-                                get_jwt_identity, jwt_required)
+from flask_jwt_extended import JWTManager, create_access_token, jwt_required
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import check_password_hash, generate_password_hash
 
@@ -32,8 +31,11 @@ class User(db.Model):
 # Эндпойнт для регистрации нового пользователя
 @ app.route('/register', methods=['POST'])
 def register():
-    username = request.json.get('username')
-    password = request.json.get('password')
+    data = request.json
+    username = data.get('username')
+    password = data.get('password')
+    firstname = data.get('firstname')
+    lastname = data.get('lastname')
 
     if User.query.filter_by(username=username).first():
         return jsonify(
@@ -49,7 +51,7 @@ def register():
              f'Password must be at least {MIN_PASSWORD_LENGTH} characters'}
         ), 400
 
-    new_user = User(username=username)
+    new_user = User(username=username, firstname=firstname, lastname=lastname)
     new_user.set_password(password)
     db.session.add(new_user)
     db.session.commit()
@@ -59,19 +61,28 @@ def register():
 # Эндпойнт для авторизации пользователя
 @app.route('/login', methods=['POST'])
 def login():
-    username = request.json.get('username')
-    password = request.json.get('password')
-    user = User.query.filter_by(username=username).first()
+    data = request.json
+    username = data.get('username')
+    password = data.get('password')
+    current_user = User.query.filter_by(username=username).first()
 
-    if user is None:
+    if current_user is None:
         return jsonify(
             {'message': 'User with that username was not found'}
         ), 401
-    if not user.check_password(password):
+    if not current_user.check_password(password):
         return jsonify({'message': 'Bad password'}), 401
 
     token = create_access_token(identity=username)
-    return jsonify(access_token=token), 200
+    return jsonify(token=token), 200
+
+
+# Эндпойнт для получения списка всех пользователей
+@app.route('/users', methods=['GET'])
+@jwt_required()
+def get_users():
+    users = User.query.all()
+    return jsonify([user.username for user in users]), 200
 
 
 if __name__ == '__main__':
