@@ -1,10 +1,15 @@
 from flask import Flask, jsonify, request
+from flask_jwt_extended import (JWTManager, create_access_token,
+                                get_jwt_identity, jwt_required)
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import check_password_hash, generate_password_hash
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
+app.config['JWT_SECRET_KEY'] = 'super-secret'
+
 db = SQLAlchemy(app)
+jwt = JWTManager(app)
 
 MIN_PASSWORD_LENGTH = 3
 
@@ -32,11 +37,11 @@ def register():
 
     if User.query.filter_by(username=username).first():
         return jsonify(
-            {'message': 'User with this username is already exists'}
+            {'message': 'User with that username is already exists'}
         ), 400
-    if len(username) == 0:
+    if not username:
         return jsonify({'message': 'Username is missing'}), 400
-    if len(password) == 0:
+    if not password:
         return jsonify({'message': 'Password is missing'}), 400
     if len(password) < MIN_PASSWORD_LENGTH:
         return jsonify(
@@ -49,6 +54,24 @@ def register():
     db.session.add(new_user)
     db.session.commit()
     return jsonify({'message': 'User successfully created'}), 201
+
+
+# Эндпойнт для авторизации пользователя
+@app.route('/login', methods=['POST'])
+def login():
+    username = request.json.get('username')
+    password = request.json.get('password')
+    user = User.query.filter_by(username=username).first()
+
+    if user is None:
+        return jsonify(
+            {'message': 'User with that username was not found'}
+        ), 401
+    if not user.check_password(password):
+        return jsonify({'message': 'Bad password'}), 401
+
+    token = create_access_token(identity=username)
+    return jsonify(access_token=token), 200
 
 
 if __name__ == '__main__':
