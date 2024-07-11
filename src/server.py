@@ -5,7 +5,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
-app.config['JWT_SECRET_KEY'] = 'super-secret'
+app.config['JWT_SECRET_KEY'] = 'secret_key'
 
 db = SQLAlchemy(app)
 jwt = JWTManager(app)
@@ -33,9 +33,9 @@ class User(db.Model):
 def register():
     data = request.json
     username = data.get('username')
-    password = data.get('password')
     firstname = data.get('firstname')
     lastname = data.get('lastname')
+    password = data.get('password')
 
     if User.query.filter_by(username=username).first():
         return jsonify(
@@ -77,12 +77,70 @@ def login():
     return jsonify(token=token), 200
 
 
-# Эндпойнт для получения списка всех пользователей
+# Эндпойнт для получения всех пользователей
 @app.route('/users', methods=['GET'])
-@jwt_required()
 def get_users():
     users = User.query.all()
-    return jsonify([user.username for user in users]), 200
+    users_list = [{'id': user.id, 'username': user.username} for user in users]
+    return jsonify(users_list), 200
+
+
+# Эндпойнт для получения информации о конкретном пользователе
+@app.route('/users/<int:user_id>', methods=['GET'])
+def get_user(user_id):
+    user = User.query.get(user_id)
+    if user is None:
+        return jsonify({'message': 'User was not found'}), 401
+
+    user_data = {
+        'id': user.id,
+        'username': user.username,
+        'firstname': user.firstname,
+        'lastname': user.lastname
+    }
+    return jsonify(user_data), 200
+
+
+# Эндпойнт для обновления информации о пользователе
+@app.route('/users/<int:user_id>', methods=['PUT', 'PATCH'])
+@jwt_required()
+def update_user(user_id):
+    user = User.query.get(user_id)
+    if user is None:
+        return jsonify({'message': 'User was not found'}), 401
+
+    data = request.json
+    firstname = data.get('firstname')
+    lastname = data.get('lastname')
+    password = data.get('password')
+
+    if firstname:
+        user.firstname = firstname
+    if lastname:
+        user.lastname = lastname
+    if password:
+        user.set_password(password)
+    db.session.commit()
+    return jsonify({'message': 'User updated'}), 200
+
+
+# Эндпойнт для удаления пользователя
+@app.route('/users/<int:user_id>', methods=['DELETE'])
+@jwt_required()
+def delete_user(user_id):
+    user = User.query.get(user_id)
+    if user is None:
+        return jsonify({'message': 'User was not found'}), 401
+
+    db.session.delete(user)
+    db.session.commit()
+    return jsonify({"msg": "User deleted"}), 200
+
+
+# Затычка для начальной страницы
+@app.route('/')
+def hello_world():
+    return 'Easy Server'
 
 
 if __name__ == '__main__':
