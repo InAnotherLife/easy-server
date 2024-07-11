@@ -15,7 +15,7 @@ app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY')
 db = SQLAlchemy(app)
 jwt = JWTManager(app)
 
-MIN_PASSWORD_LENGTH = 3
+MIN_PASSWORD_LENGTH = 3  # Минимальная длина пароля
 
 
 # Модель пользователя
