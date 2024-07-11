@@ -69,9 +69,9 @@ def login():
     if current_user is None:
         return jsonify(
             {'message': 'User with that username was not found'}
-        ), 401
+        ), 400
     if not current_user.check_password(password):
-        return jsonify({'message': 'Bad password'}), 401
+        return jsonify({'message': 'Bad password'}), 400
 
     token = create_access_token(identity=username)
     return jsonify(token=token), 200
@@ -90,7 +90,7 @@ def get_users():
 def get_user(user_id):
     user = User.query.get(user_id)
     if user is None:
-        return jsonify({'message': 'User was not found'}), 401
+        return jsonify({'message': 'User was not found'}), 404
 
     user_data = {
         'id': user.id,
@@ -107,7 +107,7 @@ def get_user(user_id):
 def update_user(user_id):
     user = User.query.get(user_id)
     if user is None:
-        return jsonify({'message': 'User was not found'}), 401
+        return jsonify({'message': 'User was not found'}), 404
 
     data = request.json
     firstname = data.get('firstname')
@@ -130,7 +130,7 @@ def update_user(user_id):
 def delete_user(user_id):
     user = User.query.get(user_id)
     if user is None:
-        return jsonify({'message': 'User was not found'}), 401
+        return jsonify({'message': 'User was not found'}), 404
 
     db.session.delete(user)
     db.session.commit()
