@@ -92,6 +92,7 @@ def get_users():
 
 # Эндпойнт для получения информации о конкретном пользователе
 @app.route('/users/<int:user_id>', methods=['GET'])
+@jwt_required()
 def get_user(user_id):
     user = db.session.get(User, user_id)
     if user is None:
